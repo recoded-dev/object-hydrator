@@ -3,6 +3,7 @@
 namespace Recoded\ObjectHydrator\Planners;
 
 use Recoded\ObjectHydrator\Attributes\Initializer;
+use Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
 use Recoded\ObjectHydrator\Contracts\Planner;
 use Recoded\ObjectHydrator\Exceptions\ClassNotFoundException;
@@ -36,7 +37,9 @@ class DefaultPlanner implements Planner
 
         $initializer = $this->discoverInitializer($class);
 
-        $parameters = $this->mapParameters($class, $initializer);
+        $prepends = $this->discoverPrepends($class);
+
+        $parameters = $this->mapParameters($class, $initializer, $prepends);
 
         return new Plan(
             initializer: $initializer,
@@ -69,11 +72,29 @@ class DefaultPlanner implements Planner
     }
 
     /**
+     * Get all ClassPrependableMapper attributes on the class.
+     *
+     * @param \ReflectionClass<object> $class
+     * @return array<int, \Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper>
+     */
+    protected function discoverPrepends(ReflectionClass $class): array
+    {
+        $attributes = array_map(static function (ReflectionAttribute $attribute) {
+            return $attribute->newInstance();
+        }, $class->getAttributes());
+
+        return array_filter($attributes, static function (object $attribute) {
+            return $attribute instanceof ClassPrependableMapper;
+        });
+    }
+
+    /**
      * @param \ReflectionClass<object> $class
      * @param string|null $initializer
+     * @param array<int, \Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper> $prepends
      * @return \Recoded\ObjectHydrator\Hydration\Parameter[]
      */
-    protected function mapParameters(ReflectionClass $class, ?string $initializer): array
+    protected function mapParameters(ReflectionClass $class, ?string $initializer, array $prepends): array
     {
         $initializer ??= '__construct';
 
@@ -83,10 +104,12 @@ class DefaultPlanner implements Planner
 
         $method = $class->getMethod($initializer);
 
-        return array_map(static function (ReflectionParameter $parameter) {
+        return array_map(static function (ReflectionParameter $parameter) use ($prepends) {
             $attributes = array_map(static function (ReflectionAttribute $attribute) {
                 return $attribute->newInstance();
             }, $parameter->getAttributes());
+
+            $attributes = array_merge($prepends, $attributes);
 
             return new Parameter(
                 name: $parameter->getName(),

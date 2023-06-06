@@ -3,11 +3,11 @@
 namespace Recoded\ObjectHydrator\Attributes;
 
 use Attribute;
-use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
+use Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper;
 use Recoded\ObjectHydrator\Data\ModifyKey;
 
-#[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
-class From implements DataMapper
+#[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
+class From implements ClassPrependableMapper
 {
     /**
      * Create a new From instance.

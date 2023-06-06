@@ -3,12 +3,12 @@
 namespace Recoded\ObjectHydrator\Attributes;
 
 use Attribute;
-use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
+use Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper;
 use Recoded\ObjectHydrator\Data\ModifyKey;
 use RuntimeException;
 
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::TARGET_CLASS)]
-class SnakeCase implements DataMapper // TODO contract to apply to all parameters if on class
+class SnakeCase implements ClassPrependableMapper
 {
     /**
      * The cache of snake-cased words.
