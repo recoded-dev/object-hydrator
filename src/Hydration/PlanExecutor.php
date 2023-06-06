@@ -2,9 +2,10 @@
 
 namespace Recoded\ObjectHydrator\Hydration;
 
+use ArrayAccess;
 use Closure;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
-use Recoded\ObjectHydrator\Contracts\Mapping\OrderAware;
+use Recoded\ObjectHydrator\Data\ModifyKey;
 
 final class PlanExecutor
 {
@@ -22,17 +23,25 @@ final class PlanExecutor
     private static function default(string $class, Plan $plan, array $data): object
     {
         $parameters = array_map(function (Parameter $parameter) use ($data) {
-            $i = 0;
+            $name = $parameter->name;
+            $precedingValue = $data;
 
-            return array_reduce($parameter->attributes, function (mixed $carry, DataMapper $mapper) use ($data, &$i) {
-                $i++;
+            return array_reduce(
+                $parameter->attributes,
+                function (mixed $carry, DataMapper $mapper) use ($data, $name, &$precedingValue) {
+                    $mapped = $mapper->map($carry, $name, $data);
 
-                if ($mapper instanceof OrderAware) {
-                    $mapper->setOrder($i);
-                }
+                    if ($mapped instanceof ModifyKey) {
+                        $from = $mapped->fromRoot ? $data : $precedingValue;
+                        $key = $mapped->key;
 
-                return $mapper->map($carry, $data);
-            }, $data[$parameter->name] ?? null);
+                        $mapped = self::get($from, $key);
+                    }
+
+                    return $precedingValue = $mapped;
+                },
+                self::get($data, $name),
+            );
         }, $plan->parameters);
 
         if ($plan->initializer === null) {
@@ -83,5 +92,41 @@ final class PlanExecutor
     public static function executeNormally(): void
     {
         self::$executeUsing = null;
+    }
+
+    /**
+     * Get key from data as far as possible, supports arrays and objects.
+     *
+     * @param mixed $value
+     * @param string $key
+     * @return mixed
+     */
+    protected static function get(mixed $value, string $key): mixed
+    {
+        $parts = preg_split('/(?<!\\\)\./', $key);
+
+        if ($parts === false) {
+            return $value;
+        }
+
+        foreach ($parts as $part) {
+            $part = str_replace('\.', '.', $part);
+
+            if (is_array($value) || $value instanceof ArrayAccess) {
+                $value = $value[$part] ?? null;
+
+                continue;
+            }
+
+            if (is_object($value)) {
+                $value = $value->{$part} ?? null;
+
+                continue;
+            }
+
+            return $value;
+        }
+
+        return $value;
     }
 }

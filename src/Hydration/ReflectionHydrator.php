@@ -8,7 +8,7 @@ use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 
 class ReflectionHydrator implements Hydrator
 {
-    private Planner $planner;
+    protected Planner $planner;
 
     /**
      * Get the planner, default if unset.
