@@ -35,9 +35,6 @@ class DefaultPlanner implements Planner
             throw new ClassNotFoundException($class);
         }
 
-        // note to self: hydration plans
-        // dump plan to file, add version/hash of plan class (vendor) to dump, scan statically before, else exception
-        //
         $class = new ReflectionClass($class);
 
         $initializer = $this->discoverInitializer($class);

@@ -8,3 +8,5 @@ parameters:
         - tests
     excludePaths:
         - tests/Dumping/correct-fixture.php
+        - tests/Hydration/fixtures/cached-outdated.php
+        - tests/Hydration/fixtures/cached.php
