@@ -6,6 +6,7 @@ use ArrayAccess;
 use Closure;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
+use Recoded\ObjectHydrator\Contracts\Mapping\HydratorAware;
 use Recoded\ObjectHydrator\Data\ModifyKey;
 
 final class PlanExecutor
@@ -30,7 +31,11 @@ final class PlanExecutor
 
             $value = array_reduce(
                 $parameter->attributes,
-                function (mixed $carry, DataMapper $mapper) use ($data, $name, &$precedingValue) {
+                function (mixed $carry, DataMapper $mapper) use ($data, &$hydrator, $name, &$precedingValue) {
+                    if ($mapper instanceof HydratorAware) {
+                        $mapper->setHydrator($hydrator);
+                    }
+
                     $mapped = $mapper->map($carry, $name, $data);
 
                     if ($mapped instanceof ModifyKey) {
