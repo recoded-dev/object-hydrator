@@ -9,8 +9,8 @@ interface DataMapper
      *
      * @param mixed $value
      * @param string $name
-     * @param array<array-key, mixed> $data
+     * @param array<array-key, mixed>|object $data
      * @return mixed
      */
-    public function map(mixed $value, string $name, array $data): mixed;
+    public function map(mixed $value, string $name, array|object $data): mixed;
 }

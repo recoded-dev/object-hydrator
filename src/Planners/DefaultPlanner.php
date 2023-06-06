@@ -2,17 +2,21 @@
 
 namespace Recoded\ObjectHydrator\Planners;
 
+use Recoded\ObjectHydrator\Attributes\HydrateUsing;
 use Recoded\ObjectHydrator\Attributes\Initializer;
 use Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
 use Recoded\ObjectHydrator\Contracts\Planner;
 use Recoded\ObjectHydrator\Exceptions\ClassNotFoundException;
 use Recoded\ObjectHydrator\Exceptions\InitializerMissingException;
+use Recoded\ObjectHydrator\Exceptions\MultipleHydratorResolversException;
 use Recoded\ObjectHydrator\Exceptions\MultipleInitializersException;
 use Recoded\ObjectHydrator\Hydration\Parameter;
+use Recoded\ObjectHydrator\Hydration\ParameterType;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionNamedType;
 use ReflectionParameter;
 use Throwable;
 
@@ -90,6 +94,30 @@ class DefaultPlanner implements Planner
     }
 
     /**
+     * Try to read the HydrateUsing attribute from the parameter.
+     *
+     * @param \ReflectionParameter $parameter
+     * @return string|null
+     */
+    protected static function discoverResolver(ReflectionParameter $parameter): ?string
+    {
+        $attributes = $parameter->getAttributes(HydrateUsing::class);
+
+        if (count($attributes) > 1) {
+            throw new MultipleHydratorResolversException($parameter->getName());
+        }
+
+        if (!isset($attributes[0])) {
+            return null;
+        }
+
+        /** @var \Recoded\ObjectHydrator\Attributes\HydrateUsing $attribute */
+        $attribute = $attributes[0]->newInstance();
+
+        return $attribute->hydratorResolver;
+    }
+
+    /**
      * @param \ReflectionClass<object> $class
      * @param string|null $initializer
      * @param array<int, \Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper> $prepends
@@ -113,6 +141,7 @@ class DefaultPlanner implements Planner
             $attributes = array_merge($prepends, $attributes);
 
             $default = null;
+            $type = null;
 
             try {
                 $default = $parameter->getDefaultValue();
@@ -120,8 +149,19 @@ class DefaultPlanner implements Planner
                 //
             }
 
+            $reflectionType = $parameter->getType();
+
+            if ($reflectionType instanceof ReflectionNamedType && !$reflectionType->isBuiltin()) {
+                $type = new ParameterType(
+                    name: $reflectionType->getName(),
+                    nullable: $reflectionType->allowsNull(),
+                    resolver: static::discoverResolver($parameter),
+                );
+            }
+
             return new Parameter(
                 name: $parameter->getName(),
+                type: $type,
                 default: $default,
                 attributes: array_filter($attributes, static function (object $attribute) {
                     return $attribute instanceof DataMapper;

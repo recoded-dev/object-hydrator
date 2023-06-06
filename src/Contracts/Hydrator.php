@@ -8,9 +8,9 @@ interface Hydrator
      * Hydrate an object from raw data.
      *
      * @template T of object
-     * @param array<array-key, mixed> $data
+     * @param array<array-key, mixed>|object $data
      * @param class-string<T> $type
      * @return T
      */
-    public function hydrate(array $data, string $type): object;
+    public function hydrate(array|object $data, string $type): object;
 }

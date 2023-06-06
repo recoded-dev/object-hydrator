@@ -4,6 +4,7 @@ namespace Recoded\ObjectHydrator\Hydration;
 
 use ArrayAccess;
 use Closure;
+use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
 use Recoded\ObjectHydrator\Data\ModifyKey;
 
@@ -17,12 +18,13 @@ final class PlanExecutor
      * @template T of object
      * @param class-string<T> $class
      * @param \Recoded\ObjectHydrator\Hydration\Plan<T> $plan
-     * @param array<array-key, mixed> $data
+     * @param array<array-key, mixed>|object $data
+     * @param \Recoded\ObjectHydrator\Contracts\Hydrator $hydrator
      * @return T
      */
-    private static function default(string $class, Plan $plan, array $data): object
+    private static function default(string $class, Plan $plan, array|object $data, Hydrator $hydrator): object
     {
-        $parameters = array_map(function (Parameter $parameter) use ($data) {
+        $parameters = array_map(function (Parameter $parameter) use ($data, $hydrator) {
             $name = $parameter->name;
             $precedingValue = $data;
 
@@ -41,9 +43,21 @@ final class PlanExecutor
                     return $precedingValue = $mapped;
                 },
                 self::get($data, $name),
-            );
+            ) ?? $parameter->default;
 
-            return $value ?? $parameter->default;
+            if ($parameter->type !== null) {
+                if ($value === null && $parameter->type->nullable) {
+                    return null;
+                }
+
+                if ($parameter->type->resolver !== null) {
+                    $hydrator = $parameter->type->resolver::resolve($data);
+                }
+
+                $value = $hydrator->hydrate($value, $parameter->type->name);
+            }
+
+            return $value;
         }, $plan->parameters);
 
         if ($plan->initializer === null) {
@@ -59,25 +73,26 @@ final class PlanExecutor
      * @template T of object
      * @param class-string<T> $class
      * @param \Recoded\ObjectHydrator\Hydration\Plan<T> $plan
-     * @param array<array-key, mixed> $data
+     * @param array<array-key, mixed>|object $data
+     * @param \Recoded\ObjectHydrator\Contracts\Hydrator $hydrator
      * @return T
      */
-    public static function execute(string $class, Plan $plan, array $data): object
+    public static function execute(string $class, Plan $plan, array|object $data, Hydrator $hydrator): object
     {
         if (self::$executeUsing !== null) {
             /** @var T */ // phpcs:ignore
 
-            return call_user_func(self::$executeUsing, $class, $plan, $data);
+            return call_user_func(self::$executeUsing, $class, $plan, $data, $hydrator);
         }
 
-        return self::default($class, $plan, $data);
+        return self::default($class, $plan, $data, $hydrator);
     }
 
     /**
      * Specify custom execution behaviour.
      *
      * @template TClass of object
-     * @param (callable(string, \Recoded\ObjectHydrator\Hydration\Plan<TClass>, array<array-key, mixed>): TClass) $executeUsing
+     * @param (callable(string, \Recoded\ObjectHydrator\Hydration\Plan<TClass>, array<array-key, mixed>|object, \Recoded\ObjectHydrator\Contracts\Hydrator): TClass) $executeUsing
      * @return void
      */
     public static function executeUsing(callable $executeUsing): void

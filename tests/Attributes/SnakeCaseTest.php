@@ -2,8 +2,10 @@
 
 namespace Tests\Attributes;
 
+use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Recoded\ObjectHydrator\Attributes\SnakeCase;
+use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use Tests\Fakes\Attributes\FooBarStringSnakeCaseDTO;
@@ -27,6 +29,7 @@ final class SnakeCaseTest extends TestCase
             FooBarStringSnakeCaseDTO::class,
             $plan,
             ['foo_bar' => 'baz'],
+            Mockery::mock(Hydrator::class),
         ));
     }
 }

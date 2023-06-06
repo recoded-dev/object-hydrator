@@ -30,7 +30,7 @@ class From implements ClassPrependableMapper
      * @param array<array-key, mixed> $data
      * @return mixed
      */
-    public function map(mixed $value, string $name, array $data): mixed
+    public function map(mixed $value, string $name, array|object $data): mixed
     {
         return new ModifyKey($this->key, $this->root);
     }

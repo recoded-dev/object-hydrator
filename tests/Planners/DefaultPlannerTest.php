@@ -5,8 +5,11 @@ namespace Tests\Planners;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Recoded\ObjectHydrator\Attributes\From;
 use Recoded\ObjectHydrator\Hydration\Parameter;
+use Recoded\ObjectHydrator\Hydration\ParameterType;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
+use Tests\Fakes\BarStringDTO;
+use Tests\Fakes\FooBarDTO;
 use Tests\Fakes\FooClassPrependableMapperStringDTO;
 use Tests\Fakes\FooMappedStringDTO;
 use Tests\Fakes\FooStringDefaultDTO;
@@ -28,6 +31,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'bar',
+                    type: null,
                     default: null,
                     attributes: [],
                 ),
@@ -46,6 +50,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    type: null,
                     default: null,
                     attributes: [],
                 ),
@@ -64,6 +69,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    type: null,
                     default: null,
                     attributes: [
                         new From('bar'),
@@ -84,6 +90,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    type: null,
                     default: null,
                     attributes: [
                         new From('bar'),
@@ -104,7 +111,31 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    type: null,
                     default: 'bar',
+                    attributes: [],
+                ),
+            ],
+        ), $plan);
+    }
+
+    public function test_it_gets_types(): void
+    {
+        $planner = new DefaultPlanner();
+
+        $plan = $planner->plan(FooBarDTO::class);
+
+        self::assertEquals(new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    type: new ParameterType(
+                        name: BarStringDTO::class,
+                        nullable: false,
+                        resolver: null,
+                    ),
+                    default: null,
                     attributes: [],
                 ),
             ],

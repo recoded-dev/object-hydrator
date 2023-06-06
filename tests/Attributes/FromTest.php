@@ -2,8 +2,10 @@
 
 namespace Tests\Attributes;
 
+use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Recoded\ObjectHydrator\Attributes\From;
+use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use Tests\Fakes\Attributes\FooStringFromDTO;
@@ -26,6 +28,7 @@ final class FromTest extends TestCase
             FooStringFromDTO::class,
             $plan,
             ['a' => 'bar'],
+            Mockery::mock(Hydrator::class),
         ));
     }
 
@@ -41,6 +44,7 @@ final class FromTest extends TestCase
             FooStringMultipleFromDTO::class,
             $plan,
             ['a' => ['b' => 'bar']],
+            Mockery::mock(Hydrator::class),
         ));
     }
 
@@ -56,6 +60,7 @@ final class FromTest extends TestCase
             FooStringNestedFromDTO::class,
             $plan,
             ['a' => ['b' => 'bar']],
+            Mockery::mock(Hydrator::class),
         ));
     }
 }
