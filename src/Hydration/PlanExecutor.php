@@ -26,7 +26,7 @@ final class PlanExecutor
             $name = $parameter->name;
             $precedingValue = $data;
 
-            return array_reduce(
+            $value = array_reduce(
                 $parameter->attributes,
                 function (mixed $carry, DataMapper $mapper) use ($data, $name, &$precedingValue) {
                     $mapped = $mapper->map($carry, $name, $data);
@@ -42,6 +42,8 @@ final class PlanExecutor
                 },
                 self::get($data, $name),
             );
+
+            return $value ?? $parameter->default;
         }, $plan->parameters);
 
         if ($plan->initializer === null) {

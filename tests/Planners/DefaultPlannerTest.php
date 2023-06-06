@@ -9,6 +9,7 @@ use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use Tests\Fakes\FooClassPrependableMapperStringDTO;
 use Tests\Fakes\FooMappedStringDTO;
+use Tests\Fakes\FooStringDefaultDTO;
 use Tests\Fakes\FooStringDTO;
 use Tests\Fakes\FooStringInitializerDTO;
 use Tests\TestCase;
@@ -27,6 +28,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'bar',
+                    default: null,
                     attributes: [],
                 ),
             ],
@@ -44,6 +46,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    default: null,
                     attributes: [],
                 ),
             ],
@@ -61,6 +64,7 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    default: null,
                     attributes: [
                         new From('bar'),
                     ],
@@ -80,9 +84,28 @@ final class DefaultPlannerTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    default: null,
                     attributes: [
                         new From('bar'),
                     ],
+                ),
+            ],
+        ), $plan);
+    }
+
+    public function test_it_gets_defaults(): void
+    {
+        $planner = new DefaultPlanner();
+
+        $plan = $planner->plan(FooStringDefaultDTO::class);
+
+        self::assertEquals(new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    default: 'bar',
+                    attributes: [],
                 ),
             ],
         ), $plan);

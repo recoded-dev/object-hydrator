@@ -14,6 +14,7 @@ use Recoded\ObjectHydrator\Hydration\Plan;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionParameter;
+use Throwable;
 
 class DefaultPlanner implements Planner
 {
@@ -111,8 +112,17 @@ class DefaultPlanner implements Planner
 
             $attributes = array_merge($prepends, $attributes);
 
+            $default = null;
+
+            try {
+                $default = $parameter->getDefaultValue();
+            } catch (Throwable) {
+                //
+            }
+
             return new Parameter(
                 name: $parameter->getName(),
+                default: $default,
                 attributes: array_filter($attributes, static function (object $attribute) {
                     return $attribute instanceof DataMapper;
                 }),

@@ -9,6 +9,7 @@ use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use Tests\Fakes\FooMappedStringDTO;
+use Tests\Fakes\FooStringDefaultDTO;
 use Tests\Fakes\FooStringDTO;
 use Tests\TestCase;
 use TypeError;
@@ -59,6 +60,7 @@ final class PlanExecutorTest extends TestCase
             parameters: [
                 new Parameter(
                     name: 'foo',
+                    default: null,
                     attributes: [
                         new From('foo.baz'),
                     ],
@@ -77,5 +79,53 @@ final class PlanExecutorTest extends TestCase
         } catch (TypeError) {
             $this->addToAssertionCount(1);
         }
+    }
+
+    public function testItFillsDefaultsWhenNull(): void
+    {
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    default: 'bar',
+                    attributes: [],
+                ),
+            ],
+        );
+
+        $executed = PlanExecutor::execute(
+            class: FooStringDefaultDTO::class,
+            plan: $plan,
+            data: ['foo' => null],
+        );
+
+        self::assertEquals(new FooStringDefaultDTO(
+            foo: 'bar',
+        ), $executed);
+    }
+
+    public function testItFillsDefaultsWhenUnset(): void
+    {
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    default: 'bar',
+                    attributes: [],
+                ),
+            ],
+        );
+
+        $executed = PlanExecutor::execute(
+            class: FooStringDefaultDTO::class,
+            plan: $plan,
+            data: [],
+        );
+
+        self::assertEquals(new FooStringDefaultDTO(
+            foo: 'bar',
+        ), $executed);
     }
 }
