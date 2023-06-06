@@ -97,7 +97,7 @@ class DefaultPlanner implements Planner
      * Try to read the HydrateUsing attribute from the parameter.
      *
      * @param \ReflectionParameter $parameter
-     * @return string|null
+     * @return class-string<\Recoded\ObjectHydrator\Contracts\Mapping\HydratorResolver>|null
      */
     protected static function discoverResolver(ReflectionParameter $parameter): ?string
     {
@@ -152,8 +152,11 @@ class DefaultPlanner implements Planner
             $reflectionType = $parameter->getType();
 
             if ($reflectionType instanceof ReflectionNamedType && !$reflectionType->isBuiltin()) {
+                /** @var class-string $typeName */
+                $typeName = $reflectionType->getName();
+
                 $type = new ParameterType(
-                    name: $reflectionType->getName(),
+                    name: $typeName,
                     nullable: $reflectionType->allowsNull(),
                     resolver: static::discoverResolver($parameter),
                 );

@@ -46,7 +46,11 @@ final class PlanExecutor
             ) ?? $parameter->default;
 
             if ($parameter->type !== null) {
-                if ($value === null && $parameter->type->nullable) {
+                if (!is_object($value) && !is_array($value)) {
+                    return null;
+                }
+
+                if ($parameter->type->nullable) {
                     return null;
                 }
 
