@@ -164,7 +164,7 @@ final class PlanExecutor
             }
 
             if ($value instanceof ArrayAccess) {
-                if ($value->offsetExists($part)) {
+                if (!$value->offsetExists($part)) {
                     return $default;
                 }
 
