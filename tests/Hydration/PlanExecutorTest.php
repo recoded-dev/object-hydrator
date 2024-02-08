@@ -2,8 +2,10 @@
 
 namespace Tests\Hydration;
 
+use ArrayObject;
 use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\TestWith;
 use Recoded\ObjectHydrator\Attributes\From;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Hydration\Parameter;
@@ -11,6 +13,7 @@ use Recoded\ObjectHydrator\Hydration\ParameterType;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
+use stdClass;
 use Tests\Fakes\BarStringDTO;
 use Tests\Fakes\FooBarDTO;
 use Tests\Fakes\FooMappedStringDTO;
@@ -124,7 +127,14 @@ final class PlanExecutorTest extends TestCase
         ), $executed);
     }
 
-    public function testItFillsDefaultsWhenUnset(): void
+    /**
+     * @param array<array-key, mixed>|object $data
+     * @return void
+     */
+    #[TestWith([[]])]
+    #[TestWith([new ArrayObject()])]
+    #[TestWith([new stdClass()])]
+    public function testItFillsDefaultsWhenUnset(array|object $data): void
     {
         $plan = new Plan(
             initializer: null,
@@ -141,7 +151,7 @@ final class PlanExecutorTest extends TestCase
         $executed = PlanExecutor::execute(
             class: FooStringDefaultDTO::class,
             plan: $plan,
-            data: [],
+            data: $data,
             hydrator: Mockery::mock(Hydrator::class),
         );
 
