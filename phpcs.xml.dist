@@ -66,7 +66,7 @@
         <properties>
             <property name="linesCountBeforeFirstContent" value="0" />
             <property name="linesCountBetweenDescriptionAndAnnotations" value="1" />
-            <property name="linesCountBetweenDifferentAnnotationTypes" value="0" />
+            <property name="linesCountBetweenDifferentAnnotationsTypes" value="0" />
             <property name="linesCountAfterLastContent" value="0" />
         </properties>
     </rule>
@@ -125,7 +125,7 @@
 
     <rule ref="SlevomatCodingStandard.Operators.SpreadOperatorSpacing">
         <properties>
-            <property name="spacesCount" value="0" />
+            <property name="spacesCountAfterOperator" value="0" />
         </properties>
     </rule>
 
@@ -173,6 +173,10 @@
 
     <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
         <exclude-pattern>tests/*Test.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>*</exclude-pattern>
     </rule>
 
     <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps" />
