@@ -15,6 +15,7 @@ use Tests\Fakes\BarStringDTO;
 use Tests\Fakes\FooBarDTO;
 use Tests\Fakes\FooMappedStringDTO;
 use Tests\Fakes\FooNullableBarDTO;
+use Tests\Fakes\FooNullableDefaultStringDTO;
 use Tests\Fakes\FooStringDefaultDTO;
 use Tests\Fakes\FooStringDTO;
 use Tests\TestCase;
@@ -97,7 +98,7 @@ final class PlanExecutorTest extends TestCase
         }
     }
 
-    public function testItFillsDefaultsWhenNull(): void
+    public function testItFillsNullWhenNullWithDefault(): void
     {
         $plan = new Plan(
             initializer: null,
@@ -112,14 +113,14 @@ final class PlanExecutorTest extends TestCase
         );
 
         $executed = PlanExecutor::execute(
-            class: FooStringDefaultDTO::class,
+            class: FooNullableDefaultStringDTO::class,
             plan: $plan,
             data: ['foo' => null],
             hydrator: Mockery::mock(Hydrator::class),
         );
 
-        self::assertEquals(new FooStringDefaultDTO(
-            foo: 'bar',
+        self::assertEquals(new FooNullableDefaultStringDTO(
+            foo: null,
         ), $executed);
     }
 
