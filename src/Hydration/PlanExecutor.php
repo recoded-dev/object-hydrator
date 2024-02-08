@@ -7,6 +7,7 @@ use Closure;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
 use Recoded\ObjectHydrator\Contracts\Mapping\HydratorAware;
+use Recoded\ObjectHydrator\Contracts\Mapping\ParameterAware;
 use Recoded\ObjectHydrator\Data\ModifyKey;
 
 final class PlanExecutor
@@ -31,9 +32,22 @@ final class PlanExecutor
 
             $value = array_reduce(
                 $parameter->attributes,
-                function (mixed $carry, DataMapper $mapper) use ($data, &$hydrator, $name, &$precedingValue) {
+                function (
+                    mixed $carry,
+                    DataMapper $mapper,
+                ) use (
+                    $data,
+                    &$hydrator,
+                    $name,
+                    $parameter,
+                    &$precedingValue,
+                ) {
                     if ($mapper instanceof HydratorAware) {
                         $mapper->setHydrator($hydrator);
+                    }
+
+                    if ($mapper instanceof ParameterAware) {
+                        $mapper->setParameter($parameter);
                     }
 
                     $mapped = $mapper->map($carry, $name, $data);
@@ -42,13 +56,13 @@ final class PlanExecutor
                         $from = $mapped->fromRoot ? $data : $precedingValue;
                         $key = $mapped->key;
 
-                        $mapped = self::get($from, $key);
+                        $mapped = self::get($from, $key, $parameter->default);
                     }
 
                     return $precedingValue = $mapped;
                 },
-                self::get($data, $name),
-            ) ?? $parameter->default;
+                self::get($data, $name, $parameter->default),
+            );
 
             if ($parameter->type !== null) {
                 if (!is_object($value) && !is_array($value)) {
@@ -125,9 +139,10 @@ final class PlanExecutor
      *
      * @param mixed $value
      * @param string $key
+     * @param mixed $default
      * @return mixed
      */
-    protected static function get(mixed $value, string $key): mixed
+    protected static function get(mixed $value, string $key, mixed $default = null): mixed
     {
         $parts = preg_split('/(?<!\\\)\./', $key);
 
@@ -138,14 +153,32 @@ final class PlanExecutor
         foreach ($parts as $part) {
             $part = str_replace('\.', '.', $part);
 
-            if (is_array($value) || $value instanceof ArrayAccess) {
-                $value = $value[$part] ?? null;
+            if (is_array($value)) {
+                if (!array_key_exists($part, $value)) {
+                    return $default;
+                }
+
+                $value = $value[$part];
+
+                continue;
+            }
+
+            if ($value instanceof ArrayAccess) {
+                if ($value->offsetExists($part)) {
+                    return $default;
+                }
+
+                $value = $value->offsetGet($part);
 
                 continue;
             }
 
             if (is_object($value)) {
-                $value = $value->{$part} ?? null;
+                if (!property_exists($value, $part)) {
+                    return $default;
+                }
+
+                $value = $value->{$part};
 
                 continue;
             }
