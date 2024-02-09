@@ -13,11 +13,14 @@ use Recoded\ObjectHydrator\Exceptions\MultipleHydratorResolversException;
 use Recoded\ObjectHydrator\Exceptions\MultipleInitializersException;
 use Recoded\ObjectHydrator\Hydration\Parameter;
 use Recoded\ObjectHydrator\Hydration\ParameterType;
+use Recoded\ObjectHydrator\Hydration\ParameterTypeComposition;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionUnionType;
 use Throwable;
 
 class DefaultPlanner implements Planner
@@ -130,10 +133,10 @@ class DefaultPlanner implements Planner
 
         $method = $class->getMethod($initializer);
 
-        return array_map(static function (ReflectionParameter $parameter) use ($prepends) {
+        return array_map(function (ReflectionParameter $parameter) use ($prepends) {
             $attributes = array_map(static function (ReflectionAttribute $attribute) {
                 return $attribute->newInstance();
-            }, $parameter->getAttributes());
+            }, $parameter->getAttributes(DataMapper::class, ReflectionAttribute::IS_INSTANCEOF));
 
             $attributes = array_merge($prepends, $attributes);
 
@@ -153,20 +156,64 @@ class DefaultPlanner implements Planner
                 $typeName = $reflectionType->getName();
 
                 $type = new ParameterType(
-                    name: $typeName,
+                    types: [$typeName],
                     nullable: $reflectionType->allowsNull(),
                     resolver: static::discoverResolver($parameter),
+                    composition: ParameterTypeComposition::Union,
                 );
+            }
+
+            if (
+                $reflectionType instanceof ReflectionUnionType
+                || $reflectionType instanceof ReflectionIntersectionType
+            ) {
+                $compositeTypes = $this->resolveCompositeType($reflectionType);
+
+                if ($compositeTypes !== []) {
+                    $composition = match (true) {
+                        $reflectionType instanceof ReflectionUnionType => ParameterTypeComposition::Union,
+                        $reflectionType instanceof ReflectionIntersectionType => ParameterTypeComposition::Intersection,
+                    };
+
+                    $type = new ParameterType(
+                        types: $compositeTypes,
+                        nullable: $reflectionType->allowsNull(),
+                        resolver: static::discoverResolver($parameter),
+                        composition: $composition,
+                    );
+                }
             }
 
             return new Parameter(
                 name: $parameter->getName(),
                 type: $type,
                 default: $default,
-                attributes: array_filter($attributes, static function (object $attribute) {
-                    return $attribute instanceof DataMapper;
-                }),
+                attributes: $attributes,
             );
         }, $method->getParameters());
+    }
+
+    /**
+     * Get all types from a composite.
+     *
+     * @param \ReflectionIntersectionType|\ReflectionUnionType $type
+     * @return list<class-string>
+     */
+    protected function resolveCompositeType(ReflectionIntersectionType|ReflectionUnionType $type): array
+    {
+        $types = [];
+
+        foreach ($type->getTypes() as $subType) {
+            if ($subType instanceof ReflectionIntersectionType || $subType instanceof ReflectionUnionType) {
+                $types = array_merge($types, $this->resolveCompositeType($subType));
+            } elseif ($subType instanceof ReflectionNamedType && !$subType->isBuiltin()) {
+                /** @var class-string $className */
+                $className = $subType->getName();
+
+                $types[] = $className;
+            }
+        }
+
+        return $types;
     }
 }

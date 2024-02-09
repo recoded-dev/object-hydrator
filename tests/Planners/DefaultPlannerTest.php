@@ -2,19 +2,24 @@
 
 namespace Tests\Planners;
 
+use ArrayAccess;
+use Countable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Recoded\ObjectHydrator\Attributes\From;
 use Recoded\ObjectHydrator\Hydration\Parameter;
 use Recoded\ObjectHydrator\Hydration\ParameterType;
+use Recoded\ObjectHydrator\Hydration\ParameterTypeComposition;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use Tests\Fakes\BarStringDTO;
 use Tests\Fakes\FooBarDTO;
 use Tests\Fakes\FooClassPrependableMapperStringDTO;
+use Tests\Fakes\FooIntersectionDTO;
 use Tests\Fakes\FooMappedStringDTO;
 use Tests\Fakes\FooStringDefaultDTO;
 use Tests\Fakes\FooStringDTO;
 use Tests\Fakes\FooStringInitializerDTO;
+use Tests\Fakes\FooUnionDTO;
 use Tests\TestCase;
 
 #[CoversClass(DefaultPlanner::class)]
@@ -131,9 +136,64 @@ final class DefaultPlannerTest extends TestCase
                 new Parameter(
                     name: 'foo',
                     type: new ParameterType(
-                        name: BarStringDTO::class,
+                        types: [BarStringDTO::class],
                         nullable: false,
                         resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: null,
+                    attributes: [],
+                ),
+            ],
+        ), $plan);
+    }
+
+    public function test_it_gets_union_types(): void
+    {
+        $planner = new DefaultPlanner();
+
+        $plan = $planner->plan(FooUnionDTO::class);
+
+        self::assertEquals(new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    type: new ParameterType(
+                        types: [
+                            BarStringDTO::class,
+                            FooStringDefaultDTO::class,
+                        ],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: null,
+                    attributes: [],
+                ),
+            ],
+        ), $plan);
+    }
+
+    public function test_it_gets_intersection_types(): void
+    {
+        $planner = new DefaultPlanner();
+
+        $plan = $planner->plan(FooIntersectionDTO::class);
+
+        self::assertEquals(new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    type: new ParameterType(
+                        types: [
+                            Countable::class,
+                            ArrayAccess::class,
+                        ],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Intersection,
                     ),
                     default: null,
                     attributes: [],

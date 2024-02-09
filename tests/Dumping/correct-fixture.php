@@ -13,9 +13,14 @@ return array (
          'name' => 'foo',
          'type' => 
         \Recoded\ObjectHydrator\Hydration\ParameterType::__set_state(array(
-           'name' => 'Tests\\Fakes\\BarStringDTO',
+           'types' => 
+          array (
+            0 => 'Tests\\Fakes\\BarStringDTO',
+          ),
            'nullable' => false,
            'resolver' => NULL,
+           'composition' => 
+          \Recoded\ObjectHydrator\Hydration\ParameterTypeComposition::Union,
         )),
          'default' => NULL,
          'attributes' => 

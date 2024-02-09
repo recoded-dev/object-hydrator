@@ -10,6 +10,7 @@ use Recoded\ObjectHydrator\Attributes\From;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Hydration\Parameter;
 use Recoded\ObjectHydrator\Hydration\ParameterType;
+use Recoded\ObjectHydrator\Hydration\ParameterTypeComposition;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
@@ -168,9 +169,10 @@ final class PlanExecutorTest extends TestCase
                 new Parameter(
                     name: 'foo',
                     type: new ParameterType(
-                        name: BarStringDTO::class,
+                        types: [BarStringDTO::class],
                         nullable: false,
                         resolver: null,
+                        composition: ParameterTypeComposition::Union,
                     ),
                     default: 'bar',
                     attributes: [],
@@ -209,9 +211,10 @@ final class PlanExecutorTest extends TestCase
                 new Parameter(
                     name: 'foo',
                     type: new ParameterType(
-                        name: BarStringDTO::class,
+                        types: [BarStringDTO::class],
                         nullable: true,
                         resolver: null,
+                        composition: ParameterTypeComposition::Union,
                     ),
                     default: null,
                     attributes: [],
