@@ -77,7 +77,7 @@ final class PlanExecutor
                     $hydrator = $parameter->type->resolver::resolve($data);
                 }
 
-                $value = $hydrator->hydrate($value, $parameter->type->name);
+                $value = $hydrator->hydrate($value, $parameter->type->main());
             }
 
             return $value;

@@ -4,9 +4,10 @@ namespace Recoded\ObjectHydrator\Hydration;
 
 /**
  * @phpstan-type ParameterTypeState array{
- *     name: class-string,
+ *     types: non-empty-list<class-string>,
  *     nullable: bool,
  *     resolver: class-string<\Recoded\ObjectHydrator\Contracts\Mapping\HydratorResolver>|null,
+ *     composition: \Recoded\ObjectHydrator\Hydration\ParameterTypeComposition,
  * }
  */
 final readonly class ParameterType
@@ -14,15 +15,17 @@ final readonly class ParameterType
     /**
      * Create a new ParameterType instance.
      *
-     * @param class-string $name
+     * @param non-empty-list<class-string> $types
      * @param bool $nullable
      * @param class-string<\Recoded\ObjectHydrator\Contracts\Mapping\HydratorResolver>|null $resolver
+     * @param \Recoded\ObjectHydrator\Hydration\ParameterTypeComposition $composition
      * @return void
      */
     public function __construct(
-        public string $name,
+        public array $types,
         public bool $nullable,
         public ?string $resolver,
+        public ParameterTypeComposition $composition,
     ) {
     }
 
@@ -36,9 +39,20 @@ final readonly class ParameterType
     public static function __set_state(array $data): self
     {
         return new self(
-            name: $data['name'],
+            types: $data['types'],
             nullable: $data['nullable'],
             resolver: $data['resolver'],
+            composition: $data['composition'],
         );
+    }
+
+    /**
+     * Get the main type.
+     *
+     * @return class-string
+     */
+    public function main(): string
+    {
+        return $this->types[0];
     }
 }
