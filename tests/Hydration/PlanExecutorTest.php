@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
 use Recoded\ObjectHydrator\Attributes\From;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
+use Recoded\ObjectHydrator\Contracts\Mapping\TypeMapper;
 use Recoded\ObjectHydrator\Hydration\Parameter;
 use Recoded\ObjectHydrator\Hydration\ParameterType;
 use Recoded\ObjectHydrator\Hydration\ParameterTypeComposition;
@@ -22,6 +23,7 @@ use Tests\Fakes\FooNullableBarDTO;
 use Tests\Fakes\FooNullableDefaultStringDTO;
 use Tests\Fakes\FooStringDefaultDTO;
 use Tests\Fakes\FooStringDTO;
+use Tests\Fakes\FooUnionDTO;
 use Tests\TestCase;
 use TypeError;
 
@@ -84,6 +86,7 @@ final class PlanExecutorTest extends TestCase
                     attributes: [
                         new From('foo.baz'),
                     ],
+                    typeMappers: [],
                 ),
             ],
         );
@@ -112,6 +115,7 @@ final class PlanExecutorTest extends TestCase
                     type: null,
                     default: 'bar',
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         );
@@ -145,6 +149,7 @@ final class PlanExecutorTest extends TestCase
                     type: null,
                     default: 'bar',
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         );
@@ -176,6 +181,7 @@ final class PlanExecutorTest extends TestCase
                     ),
                     default: 'bar',
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         );
@@ -218,6 +224,7 @@ final class PlanExecutorTest extends TestCase
                     ),
                     default: null,
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         );
@@ -230,5 +237,110 @@ final class PlanExecutorTest extends TestCase
         );
 
         self::assertEquals(new FooNullableBarDTO(foo: null), $executed);
+    }
+
+    public function testItCallsTypeMappersAndReturnNull(): void
+    {
+        $mapper = Mockery::mock(TypeMapper::class);
+
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    type: new ParameterType(
+                        types: [
+                            BarStringDTO::class,
+                            FooStringDefaultDTO::class,
+                        ],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: null,
+                    attributes: [],
+                    typeMappers: [$mapper],
+                ),
+            ],
+        );
+
+        $mapper
+            ->expects('map')
+            ->with(BarStringDTO::class, [
+                'type' => 'bar',
+            ])
+            ->andReturnNull();
+
+        $this->expectException(TypeError::class);
+
+        PlanExecutor::execute(
+            class: FooUnionDTO::class,
+            plan: $plan,
+            data: [
+                'foo' => [
+                    'type' => 'bar',
+                ],
+            ],
+            hydrator: Mockery::mock(Hydrator::class),
+        );
+    }
+
+    public function testItCallsTypeMappersAndReturnType(): void
+    {
+        $mapper = Mockery::mock(TypeMapper::class);
+
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    type: new ParameterType(
+                        types: [
+                            BarStringDTO::class,
+                            FooStringDefaultDTO::class,
+                        ],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: null,
+                    attributes: [],
+                    typeMappers: [$mapper],
+                ),
+            ],
+        );
+
+        $mapper
+            ->expects('map')
+            ->with(BarStringDTO::class, [
+                'type' => 'bar',
+                'foo' => 'expected',
+            ])
+            ->andReturn(FooStringDefaultDTO::class);
+
+        $hydrator = Mockery::mock(Hydrator::class);
+        $hydrator
+            ->expects('hydrate')
+            ->with([
+                'type' => 'bar',
+                'foo' => 'expected',
+            ], FooStringDefaultDTO::class)
+            ->andReturn(new FooStringDefaultDTO(foo: 'expected'));
+
+        $executed = PlanExecutor::execute(
+            class: FooUnionDTO::class,
+            plan: $plan,
+            data: [
+                'foo' => [
+                    'type' => 'bar',
+                    'foo' => 'expected',
+                ],
+            ],
+            hydrator: $hydrator,
+        );
+
+        self::assertEquals(new FooUnionDTO(
+            foo: new FooStringDefaultDTO(foo: 'expected'),
+        ), $executed);
     }
 }

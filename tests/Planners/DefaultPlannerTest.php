@@ -39,6 +39,7 @@ final class DefaultPlannerTest extends TestCase
                     type: null,
                     default: null,
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -58,6 +59,7 @@ final class DefaultPlannerTest extends TestCase
                     type: null,
                     default: null,
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -79,6 +81,7 @@ final class DefaultPlannerTest extends TestCase
                     attributes: [
                         new From('bar'),
                     ],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -100,6 +103,7 @@ final class DefaultPlannerTest extends TestCase
                     attributes: [
                         new From('bar'),
                     ],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -119,6 +123,7 @@ final class DefaultPlannerTest extends TestCase
                     type: null,
                     default: 'bar',
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -143,6 +148,7 @@ final class DefaultPlannerTest extends TestCase
                     ),
                     default: null,
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -170,6 +176,7 @@ final class DefaultPlannerTest extends TestCase
                     ),
                     default: null,
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);
@@ -197,6 +204,7 @@ final class DefaultPlannerTest extends TestCase
                     ),
                     default: null,
                     attributes: [],
+                    typeMappers: [],
                 ),
             ],
         ), $plan);

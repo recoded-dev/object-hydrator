@@ -26,6 +26,9 @@ return array (
          'attributes' => 
         array (
         ),
+         'typeMappers' => 
+        array (
+        ),
       )),
     ),
   )),

@@ -6,6 +6,7 @@ use Recoded\ObjectHydrator\Attributes\HydrateUsing;
 use Recoded\ObjectHydrator\Attributes\Initializer;
 use Recoded\ObjectHydrator\Contracts\Mapping\ClassPrependableMapper;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
+use Recoded\ObjectHydrator\Contracts\Mapping\TypeMapper;
 use Recoded\ObjectHydrator\Contracts\Planner;
 use Recoded\ObjectHydrator\Exceptions\ClassNotFoundException;
 use Recoded\ObjectHydrator\Exceptions\InitializerMissingException;
@@ -134,11 +135,15 @@ class DefaultPlanner implements Planner
         $method = $class->getMethod($initializer);
 
         return array_map(function (ReflectionParameter $parameter) use ($prepends) {
-            $attributes = array_map(static function (ReflectionAttribute $attribute) {
+            $dataMappers = array_map(static function (ReflectionAttribute $attribute) {
                 return $attribute->newInstance();
             }, $parameter->getAttributes(DataMapper::class, ReflectionAttribute::IS_INSTANCEOF));
 
-            $attributes = array_merge($prepends, $attributes);
+            $dataMappers = array_merge($prepends, $dataMappers);
+
+            $typeMappers = array_map(static function (ReflectionAttribute $attribute) {
+                return $attribute->newInstance();
+            }, $parameter->getAttributes(TypeMapper::class, ReflectionAttribute::IS_INSTANCEOF));
 
             $default = null;
             $type = null;
@@ -188,7 +193,8 @@ class DefaultPlanner implements Planner
                 name: $parameter->getName(),
                 type: $type,
                 default: $default,
-                attributes: $attributes,
+                attributes: $dataMappers,
+                typeMappers: $typeMappers,
             );
         }, $method->getParameters());
     }
