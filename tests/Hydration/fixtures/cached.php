@@ -3,17 +3,20 @@
 // DUMP_VERSION: 1
 
 return array (
-  'Tests\\Fakes\\FooStringDTO' =>
+  'Tests\\Fakes\\FooStringDTO' => 
   \Recoded\ObjectHydrator\Hydration\Plan::__set_state(array(
      'initializer' => NULL,
-     'parameters' =>
+     'parameters' => 
     array (
-      0 =>
+      0 => 
       \Recoded\ObjectHydrator\Hydration\Parameter::__set_state(array(
          'name' => 'foo',
          'type' => NULL,
          'default' => NULL,
-         'attributes' =>
+         'attributes' => 
+        array (
+        ),
+         'typeMappers' => 
         array (
         ),
       )),

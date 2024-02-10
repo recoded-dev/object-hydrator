@@ -8,6 +8,7 @@ use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
 use Recoded\ObjectHydrator\Contracts\Mapping\HydratorAware;
 use Recoded\ObjectHydrator\Contracts\Mapping\ParameterAware;
+use Recoded\ObjectHydrator\Contracts\Mapping\TypeMapper;
 use Recoded\ObjectHydrator\Data\ModifyKey;
 
 final class PlanExecutor
@@ -64,20 +65,25 @@ final class PlanExecutor
                 self::get($data, $name, $parameter->default),
             );
 
-            if ($parameter->type !== null) {
+            if ($parameter->type !== null || $parameter->typeMappers !== []) {
                 if (!is_object($value) && !is_array($value)) {
                     return null;
                 }
 
-                if ($parameter->type->nullable) {
-                    return null;
-                }
-
-                if ($parameter->type->resolver !== null) {
+                // TODO find out why reference
+                if ($parameter->type?->resolver !== null) {
                     $hydrator = $parameter->type->resolver::resolve($data);
                 }
 
-                $value = $hydrator->hydrate($value, $parameter->type->main());
+                $type = array_reduce(
+                    $parameter->typeMappers,
+                    static fn (?string $type, TypeMapper $mapper) => $mapper->map($type, $value),
+                    $parameter->type?->main(),
+                );
+
+                if ($type !== null) {
+                    $value = $hydrator->hydrate($value, $type);
+                }
             }
 
             return $value;
@@ -141,8 +147,9 @@ final class PlanExecutor
      * @param string $key
      * @param mixed $default
      * @return mixed
+     * @internal
      */
-    protected static function get(mixed $value, string $key, mixed $default = null): mixed
+    public static function get(mixed $value, string $key, mixed $default = null): mixed
     {
         $parts = preg_split('/(?<!\\\)\./', $key);
 
