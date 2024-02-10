@@ -30,7 +30,7 @@ use TypeError;
 #[CoversClass(PlanExecutor::class)]
 final class PlanExecutorTest extends TestCase
 {
-    public function testItHydratesUsingCustomCallable(): void
+    public function test_it_hydrates_using_custom_callable(): void
     {
         $hydrated = new FooStringDTO(foo: 'bar');
         $plan = new Plan(null, []);
@@ -60,7 +60,7 @@ final class PlanExecutorTest extends TestCase
         self::assertTrue($ran);
     }
 
-    public function testItHydratesUsingDefaultExecutor(): void
+    public function test_it_hydratesUsing_default_executor(): void
     {
         $executed = PlanExecutor::execute(
             class: FooMappedStringDTO::class,
@@ -74,7 +74,7 @@ final class PlanExecutorTest extends TestCase
         ), $executed);
     }
 
-    public function testItThrowsTypeErrors(): void
+    public function test_it_throws_type_errors(): void
     {
         $plan = new Plan(
             initializer: null,
@@ -105,7 +105,7 @@ final class PlanExecutorTest extends TestCase
         }
     }
 
-    public function testItFillsNullWhenNullWithDefault(): void
+    public function test_it_fills_null_when_null_with_default(): void
     {
         $plan = new Plan(
             initializer: null,
@@ -139,7 +139,7 @@ final class PlanExecutorTest extends TestCase
     #[TestWith([[]])]
     #[TestWith([new ArrayObject()])]
     #[TestWith([new stdClass()])]
-    public function testItFillsDefaultsWhenUnset(array|object $data): void
+    public function test_it_fills_defaults_when_unset(array|object $data): void
     {
         $plan = new Plan(
             initializer: null,
@@ -166,7 +166,7 @@ final class PlanExecutorTest extends TestCase
         ), $executed);
     }
 
-    public function testMapsToNonBuiltInTypes(): void
+    public function test_it_maps_to_non_built_in_types(): void
     {
         $plan = new Plan(
             initializer: null,
@@ -209,7 +209,7 @@ final class PlanExecutorTest extends TestCase
         ), $executed);
     }
 
-    public function testMapsToNonBuiltInNullableTypes(): void
+    public function test_it_maps_to_non_built_in_nullable_types(): void
     {
         $plan = new Plan(
             initializer: null,
@@ -239,7 +239,7 @@ final class PlanExecutorTest extends TestCase
         self::assertEquals(new FooNullableBarDTO(foo: null), $executed);
     }
 
-    public function testItCallsTypeMappersAndReturnNull(): void
+    public function test_it_calls_type_mappers_and_return_null(): void
     {
         $mapper = Mockery::mock(TypeMapper::class);
 
@@ -285,7 +285,7 @@ final class PlanExecutorTest extends TestCase
         );
     }
 
-    public function testItCallsTypeMappersAndReturnType(): void
+    public function test_it_calls_type_mappers_and_return_type(): void
     {
         $mapper = Mockery::mock(TypeMapper::class);
 

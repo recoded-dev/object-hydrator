@@ -14,7 +14,7 @@ use Tests\TestCase;
 #[CoversClass(ReflectionHydrator::class)]
 final class ReflectionHydratorTest extends TestCase
 {
-    public function testItPlansAndExecutes(): void
+    public function test_it_plans_and_executes(): void
     {
         $planner = Mockery::mock(Planner::class);
 
