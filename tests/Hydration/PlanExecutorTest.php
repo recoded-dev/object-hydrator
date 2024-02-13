@@ -16,7 +16,9 @@ use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use stdClass;
+use Tests\Fakes\BarBackedEnumDTO;
 use Tests\Fakes\BarStringDTO;
+use Tests\Fakes\BarUnitEnumDTO;
 use Tests\Fakes\FooBarDTO;
 use Tests\Fakes\FooMappedStringDTO;
 use Tests\Fakes\FooNullableBarDTO;
@@ -24,6 +26,8 @@ use Tests\Fakes\FooNullableDefaultStringDTO;
 use Tests\Fakes\FooStringDefaultDTO;
 use Tests\Fakes\FooStringDTO;
 use Tests\Fakes\FooUnionDTO;
+use Tests\Fakes\Value\FooBackedEnum;
+use Tests\Fakes\Value\FooUnitEnum;
 use Tests\TestCase;
 use TypeError;
 
@@ -342,5 +346,69 @@ final class PlanExecutorTest extends TestCase
         self::assertEquals(new FooUnionDTO(
             foo: new FooStringDefaultDTO(foo: 'expected'),
         ), $executed);
+    }
+
+    public function test_it_hydrates_backed_enums(): void
+    {
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'bar',
+                    type: new ParameterType(
+                        types: [FooBackedEnum::class],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: null,
+                    attributes: [],
+                    typeMappers: [],
+                ),
+            ],
+        );
+
+        $executed = PlanExecutor::execute(
+            class: BarBackedEnumDTO::class,
+            plan: $plan,
+            data: [
+                'bar' => 'foo',
+            ],
+            hydrator: Mockery::mock(Hydrator::class),
+        );
+
+        self::assertSame(FooBackedEnum::Foo, $executed->bar);
+    }
+
+    public function test_it_hydrates_unit_enums(): void
+    {
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'bar',
+                    type: new ParameterType(
+                        types: [FooUnitEnum::class],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: null,
+                    attributes: [],
+                    typeMappers: [],
+                ),
+            ],
+        );
+
+        $executed = PlanExecutor::execute(
+            class: BarUnitEnumDTO::class,
+            plan: $plan,
+            data: [
+                'bar' => 'Foo',
+            ],
+            hydrator: Mockery::mock(Hydrator::class),
+        );
+
+        self::assertSame(FooUnitEnum::Foo, $executed->bar);
     }
 }
