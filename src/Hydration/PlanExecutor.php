@@ -3,6 +3,7 @@
 namespace Recoded\ObjectHydrator\Hydration;
 
 use ArrayAccess;
+use BackedEnum;
 use Closure;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Contracts\Mapping\DataMapper;
@@ -10,6 +11,7 @@ use Recoded\ObjectHydrator\Contracts\Mapping\HydratorAware;
 use Recoded\ObjectHydrator\Contracts\Mapping\ParameterAware;
 use Recoded\ObjectHydrator\Contracts\Mapping\TypeMapper;
 use Recoded\ObjectHydrator\Data\ModifyKey;
+use UnitEnum;
 
 final class PlanExecutor
 {
@@ -66,10 +68,6 @@ final class PlanExecutor
             );
 
             if ($parameter->type !== null || $parameter->typeMappers !== []) {
-                if (!is_object($value) && !is_array($value)) {
-                    return null;
-                }
-
                 // TODO find out why reference
                 if ($parameter->type?->resolver !== null) {
                     $hydrator = $parameter->type->resolver::resolve($data);
@@ -82,7 +80,19 @@ final class PlanExecutor
                 );
 
                 if ($type !== null) {
-                    $value = $hydrator->hydrate($value, $type);
+                    if (is_a($type, UnitEnum::class, true) && (is_int($value) || is_string($value))) {
+                        if (is_a($type, BackedEnum::class, true)) {
+                            $value = $type::from($value);
+                        } elseif (is_string($value)) {
+                            $value = constant("$type::$value");
+                        }
+                    } else {
+                        if (!is_object($value) && !is_array($value)) {
+                            return null;
+                        }
+
+                        $value = $hydrator->hydrate($value, $type);
+                    }
                 }
             }
 

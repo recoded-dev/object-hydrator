@@ -7,9 +7,9 @@ interface TypeMapper
     /**
      * Map type of parameter.
      *
-     * @param string|null $type
-     * @param array<array-key, mixed>|object $data
+     * @param class-string|null $type
+     * @param mixed $data
      * @return class-string|null
      */
-    public function map(?string $type, array|object $data): ?string;
+    public function map(?string $type, mixed $data): ?string;
 }
