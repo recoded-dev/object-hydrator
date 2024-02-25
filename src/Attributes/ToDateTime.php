@@ -105,7 +105,7 @@ class ToDateTime implements DataMapper
     /**
      * Indicate whether to use immutable datetime or not.
      *
-     * @param (callable(string|null, string|null, \DateTimeZone|null): \DateTimeInterface)|null $hydrateUsing
+     * @param (callable(string|null, string|null, \DateTimeZone|null): \DateTimeInterface|null)|null $hydrateUsing
      * @return void
      */
     public static function hydrateUsing(?callable $hydrateUsing): void
