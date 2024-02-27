@@ -9,7 +9,7 @@ return array (
      'parameters' => 
     array (
       0 => 
-      \Recoded\ObjectHydrator\Hydration\Parameter::__set_state(array(
+      \Recoded\ObjectHydrator\Dumping\DumpedParameter::__set_state(array(
          'name' => 'foo',
          'type' => NULL,
          'default' => NULL,
@@ -17,6 +17,12 @@ return array (
         array (
         ),
          'typeMappers' => 
+        array (
+        ),
+         'dumpedDataMappers' => 
+        array (
+        ),
+         'dumpedTypeMappers' => 
         array (
         ),
       )),

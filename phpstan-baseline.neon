@@ -1,6 +1,26 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Property Recoded\\\\ObjectHydrator\\\\Dumping\\\\DumpedAttribute\\:\\:\\$value is never read, only written\\.$#"
+			count: 1
+			path: src/Dumping/DumpedAttribute.php
+
+		-
+			message: "#^Property Recoded\\\\ObjectHydrator\\\\Dumping\\\\DumpedParameter\\:\\:\\$dumpedDataMappers is never read, only written\\.$#"
+			count: 1
+			path: src/Dumping/DumpedParameter.php
+
+		-
+			message: "#^Property Recoded\\\\ObjectHydrator\\\\Dumping\\\\DumpedParameter\\:\\:\\$dumpedTypeMappers is never read, only written\\.$#"
+			count: 1
+			path: src/Dumping/DumpedParameter.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of function array_map expects \\(callable\\(Recoded\\\\ObjectHydrator\\\\Hydration\\\\Plan\\<object\\>\\)\\: mixed\\)\\|null, Closure\\(Recoded\\\\ObjectHydrator\\\\Hydration\\\\Plan\\<TClass\\>\\)\\: Recoded\\\\ObjectHydrator\\\\Hydration\\\\Plan\\<TClass\\> given\\.$#"
+			count: 1
+			path: src/Dumping/Dumper.php
+
+		-
 			message: "#^Variable property access on object\\.$#"
 			count: 1
 			path: src/Hydration/PlanExecutor.php

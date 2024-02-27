@@ -2,6 +2,7 @@
 
 namespace Recoded\ObjectHydrator\Dumping;
 
+use Recoded\ObjectHydrator\Hydration\Parameter;
 use Recoded\ObjectHydrator\Hydration\Plan;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
 use RuntimeException;
@@ -12,6 +13,27 @@ class Dumper
     private array $classes = [];
 
     private string $planner;
+
+    /**
+     * Convert plan parameters to dumped parameters.
+     *
+     * @template TClass of object
+     * @param \Recoded\ObjectHydrator\Hydration\Plan<TClass> $plan
+     * @return \Recoded\ObjectHydrator\Hydration\Plan<TClass>
+     */
+    public static function convertPlanParameters(Plan $plan): Plan
+    {
+        return new Plan(
+            initializer: $plan->initializer,
+            parameters: array_map(static fn (Parameter $parameter) => new DumpedParameter(
+                name: $parameter->name,
+                type: $parameter->type,
+                default: $parameter->default,
+                attributes: $parameter->attributes,
+                typeMappers: $parameter->typeMappers,
+            ), $plan->parameters),
+        );
+    }
 
     /**
      * Indicate which classes to dump.
@@ -109,7 +131,7 @@ class Dumper
     {
         return str_replace(
             ['{{ dump }}', '{{ version }}'],
-            [var_export($dump, true), Plan::VERSION],
+            [var_export(array_map(static::convertPlanParameters(...), $dump), true), Plan::VERSION],
             $template,
         );
     }

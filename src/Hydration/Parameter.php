@@ -3,15 +3,9 @@
 namespace Recoded\ObjectHydrator\Hydration;
 
 /**
- * @phpstan-type ParameterState array{
- *     name: string,
- *     type: \Recoded\ObjectHydrator\Hydration\ParameterType,
- *     default: mixed,
- *     attributes: \Recoded\ObjectHydrator\Contracts\Mapping\DataMapper[],
- *     typeMappers: \Recoded\ObjectHydrator\Contracts\Mapping\TypeMapper[],
- * }
+ * @internal
  */
-final readonly class Parameter
+readonly class Parameter
 {
     /**
      * Create a new Parameter instance.
@@ -30,23 +24,5 @@ final readonly class Parameter
         public array $attributes, // TODO rename to dataMappers
         public array $typeMappers,
     ) {
-    }
-
-    /**
-     * Re-instantiate this class based on state data.
-     *
-     * @param array<string, mixed> $data
-     * @phpstan-param ParameterState $data
-     * @return self
-     */
-    public static function __set_state(array $data): self
-    {
-        return new self(
-            name: $data['name'],
-            type: $data['type'],
-            default: $data['default'],
-            attributes: $data['attributes'],
-            typeMappers: $data['typeMappers'],
-        );
     }
 }
