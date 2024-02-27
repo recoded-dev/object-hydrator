@@ -216,6 +216,7 @@
     <file>tests/</file>
 
     <exclude-pattern>tests/Dumping/correct-fixture.php</exclude-pattern>
+    <exclude-pattern>tests/Hydration/fixtures/cached-attributes.php</exclude-pattern>
     <exclude-pattern>tests/Hydration/fixtures/cached-outdated.php</exclude-pattern>
     <exclude-pattern>tests/Hydration/fixtures/cached.php</exclude-pattern>
 

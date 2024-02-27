@@ -4,7 +4,7 @@ namespace Tests\Dumping;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use Recoded\ObjectHydrator\Dumping\Dumper;
-use Tests\Fakes\FooBarDTO;
+use Tests\Fakes\DumpDTO;
 use Tests\TestCase;
 
 #[CoversClass(Dumper::class)]
@@ -19,7 +19,7 @@ final class DumperTest extends TestCase
         }
 
         (new Dumper())
-            ->classes([FooBarDTO::class])
+            ->classes([DumpDTO::class])
             ->dump($path);
 
         self::assertFileEquals($path, __DIR__ . '/correct-fixture.php');
