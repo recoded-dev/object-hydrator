@@ -3,6 +3,7 @@
 namespace Tests\Hydration;
 
 use ArrayObject;
+use Exception;
 use Mockery;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -241,6 +242,47 @@ final class PlanExecutorTest extends TestCase
         );
 
         self::assertEquals(new FooNullableBarDTO(foo: null), $executed);
+    }
+
+    public function test_it_does_not_call_sub_hydrator_when_value_is_not_std_class_when_is_object(): void
+    {
+        $plan = new Plan(
+            initializer: null,
+            parameters: [
+                new Parameter(
+                    name: 'foo',
+                    type: new ParameterType(
+                        types: [BarStringDTO::class],
+                        nullable: false,
+                        resolver: null,
+                        composition: ParameterTypeComposition::Union,
+                    ),
+                    default: 'bar',
+                    attributes: [],
+                    typeMappers: [],
+                ),
+            ],
+        );
+
+        $subHydrator = Mockery::mock(Hydrator::class);
+
+        $subHydrator
+            ->expects('hydrate')
+            ->never()
+            ->andThrow(Exception::class, 'Should not hydrate');
+
+        $executed = PlanExecutor::execute(
+            class: FooBarDTO::class,
+            plan: $plan,
+            data: ['foo' => new BarStringDTO(bar: 'baz')],
+            hydrator: $subHydrator,
+        );
+
+        self::assertEquals(new FooBarDTO(
+            foo: new BarStringDTO(
+                bar: 'baz',
+            ),
+        ), $executed);
     }
 
     public function test_it_calls_type_mappers_and_return_null(): void

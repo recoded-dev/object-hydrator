@@ -11,6 +11,7 @@ use Recoded\ObjectHydrator\Contracts\Mapping\HydratorAware;
 use Recoded\ObjectHydrator\Contracts\Mapping\ParameterAware;
 use Recoded\ObjectHydrator\Contracts\Mapping\TypeMapper;
 use Recoded\ObjectHydrator\Data\ModifyKey;
+use stdClass;
 use UnitEnum;
 
 final class PlanExecutor
@@ -89,6 +90,10 @@ final class PlanExecutor
                     } else {
                         if (!is_object($value) && !is_array($value)) {
                             return null;
+                        }
+
+                        if (is_object($value) && $value::class !== stdClass::class) {
+                            return $value;
                         }
 
                         $value = $hydrator->hydrate($value, $type);
