@@ -86,7 +86,10 @@ final class ToDateTimeTest extends TestCase
 
         $result = $mapper->map('2024-01-01', 'foo', []);
 
-        self::assertEquals(DateTime::createFromFormat('Y-m-d', '2024-01-01'), $result);
+        self::assertEquals(
+            DateTime::createFromFormat('Y-m-d', '2024-01-01', new DateTimeZone('Europe/Amsterdam')),
+            $result,
+        );
     }
 
     public function test_it_converts_value_to_datetime_immutable(): void
