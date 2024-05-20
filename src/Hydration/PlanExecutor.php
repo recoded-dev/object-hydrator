@@ -57,10 +57,17 @@ final class PlanExecutor
                     $mapped = $mapper->map($carry, $name, $data);
 
                     if ($mapped instanceof ModifyKey) {
+                        $resetPreceding = $mapped->resetPreceding;
                         $from = $mapped->fromRoot ? $data : $precedingValue;
                         $key = $mapped->key;
 
                         $mapped = self::get($from, $key, $parameter->default);
+
+                        if ($resetPreceding) {
+                            $precedingValue = $from;
+
+                            return $mapped;
+                        }
                     }
 
                     return $precedingValue = $mapped;

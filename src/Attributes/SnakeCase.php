@@ -69,6 +69,6 @@ class SnakeCase implements ClassPrependableMapper
      */
     public function map(mixed $value, string $name, array|object $data): mixed
     {
-        return new ModifyKey(self::apply($name));
+        return new ModifyKey(self::apply($name), resetPreceding: true);
     }
 }

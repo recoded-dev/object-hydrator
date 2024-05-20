@@ -8,6 +8,7 @@ use Recoded\ObjectHydrator\Attributes\SnakeCase;
 use Recoded\ObjectHydrator\Contracts\Hydrator;
 use Recoded\ObjectHydrator\Hydration\PlanExecutor;
 use Recoded\ObjectHydrator\Planners\DefaultPlanner;
+use Tests\Fakes\Attributes\FooBarStringSnakeCaseClassDTO;
 use Tests\Fakes\Attributes\FooBarStringSnakeCaseDTO;
 use Tests\TestCase;
 
@@ -27,6 +28,23 @@ final class SnakeCaseTest extends TestCase
             fooBar: 'baz',
         ), PlanExecutor::execute(
             FooBarStringSnakeCaseDTO::class,
+            $plan,
+            ['foo_bar' => 'baz'],
+            Mockery::mock(Hydrator::class),
+        ));
+    }
+
+    public function test_resets_previous(): void
+    {
+        $planner = new DefaultPlanner();
+
+        $plan = $planner->plan(FooBarStringSnakeCaseClassDTO::class);
+
+        self::assertEquals(new FooBarStringSnakeCaseClassDTO(
+            fooBar: 'baz',
+            foo: 'baz',
+        ), PlanExecutor::execute(
+            FooBarStringSnakeCaseClassDTO::class,
             $plan,
             ['foo_bar' => 'baz'],
             Mockery::mock(Hydrator::class),
